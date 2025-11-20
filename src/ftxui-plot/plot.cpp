@@ -10,7 +10,7 @@
 #include <charconv>
 #include <optional>
 
-#include "plot.hpp"
+#include "ftxui-plot/plot.hpp"
 
 template <typename T>
 std::optional<T> get_as(const std::string &str) {

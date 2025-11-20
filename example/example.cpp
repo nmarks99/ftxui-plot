@@ -8,7 +8,7 @@
 #include "ftxui/component/loop.hpp"
 #include "ftxui/component/screen_interactive.hpp"
 
-#include "plot.hpp"
+#include "ftxui-plot/plot.hpp"
 
 using namespace ftxui;
 
