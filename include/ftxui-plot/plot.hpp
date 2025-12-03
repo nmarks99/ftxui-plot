@@ -12,13 +12,18 @@ namespace PlotEvent {
     inline const ftxui::Event AutoScale = ftxui::Event::Special("PLOT_AUTOSCALE");
 }
 
-enum class SeriesStyle {Point, Block};
+enum class SeriesStyle {
+    PointLine,
+    BlockLine,
+    PointScatter,
+    BlockScatter
+};
 
 struct PlotSeries {
     Ref<std::vector<double>> x;
     Ref<std::vector<double>> y;
     Ref<Color> color = Color::RGB(0, 0, 255);
-    Ref<SeriesStyle> style = SeriesStyle::Point;
+    Ref<SeriesStyle> style = SeriesStyle::PointLine;
 };
 
 struct PlotOption {

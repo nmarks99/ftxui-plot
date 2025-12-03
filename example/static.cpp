@@ -30,8 +30,8 @@ int main() {
     Color color2 = Color::Blue;
 
     PlotData data = {
-	{&x1, &y1, &color1},
-	{&x2, &y2}
+	{&x1, &y1, &color1, SeriesStyle::PointScatter},
+	{&x2, &y2, &color2, SeriesStyle::PointLine}
     };
 
     // Color selector for series 1
@@ -61,8 +61,8 @@ int main() {
     // Edit some data after creating the plot to demonstrate we can
     double lastx = x1.back();
     double lasty = y1.back();
-    for (size_t i = 0; i < 50; i++) {
-	lastx += 0.1;
+    for (size_t i = 0; i < 10; i++) {
+	lastx += 0.5;
 	x1.push_back(lastx);
 	y1.push_back(lasty);
     }
