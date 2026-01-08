@@ -1,3 +1,4 @@
+#pragma once
 #include <ftxui/component/component_base.hpp>
 #include <ftxui/component/event.hpp>
 #include <ftxui/screen/color.hpp>
