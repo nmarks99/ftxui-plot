@@ -23,6 +23,7 @@ int main() {
     auto x1 = arange<std::vector<double>>(0, 4 * M_PI, 0.1);
     std::vector<double> y1(x1.size());
     std::transform(x1.begin(), x1.end(), y1.begin(), [](double v) { return 2*std::sin(v); });
+    std::transform(y1.begin(), y1.end(), y1.begin(), [](double v) { return v > 0 ? std::numeric_limits<double>::quiet_NaN() : v; });
     Color color1 = Color::Red;
 
     auto x2 = arange<std::vector<double>>(0, 8 * M_PI, 0.1);

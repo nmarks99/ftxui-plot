@@ -13,6 +13,7 @@
 #include <limits>
 #include <optional>
 #include <string>
+#include <cmath>
 
 namespace {
     template <typename T> std::optional<T> get_as(const std::string &str) {
@@ -230,12 +231,15 @@ class PlotBase : public ComponentBase, public PlotOption<Container> {
                     return static_cast<int>(linear_map(v, xmin_, xmax_, 0 + x_plot_start, c.width() + 0));
                 });
                 std::transform(y().begin(), y().end(), yout.begin(), [&](auto v) {
+		    if (std::isnan(v)) {
+			return std::numeric_limits<int>::max();
+		    }
                     return -static_cast<int>(linear_map(v, ymin_, ymax_, 0, c.height() - 10)) + c.height() - 10;
                 });
 
 
 		auto in_view = [&](int x, int y) -> bool{
-		    if (x == std::numeric_limits<double>::quiet_NaN() || y == std::numeric_limits<double>::quiet_NaN()) {
+		    if (x == std::numeric_limits<int>::max() || y == std::numeric_limits<int>::max()) {
 			return false;
 		    }
 		    return (x >= x_plot_start) && (y < y_plot_start);
