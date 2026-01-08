@@ -1,39 +1,40 @@
 #include <cmath>
-#include <ftxui/component/event.hpp>
-#include <ftxui/dom/node.hpp>
 #include <string>
 #include <deque>
+#include <random>
 
-#include "ftxui/component/component.hpp"
-#include "ftxui/component/component_base.hpp"
-#include "ftxui/component/loop.hpp"
-#include "ftxui/component/screen_interactive.hpp"
+#include <ftxui/component/event.hpp>
+#include <ftxui/dom/node.hpp>
+#include <ftxui/component/component.hpp>
+#include <ftxui/component/component_base.hpp>
+#include <ftxui/component/loop.hpp>
+#include <ftxui/component/screen_interactive.hpp>
 
-#include "ftxui-plot/plot.hpp"
+#include <ftxui-plot/plot.hpp>
 
 using namespace ftxui;
 
-using PlotData = std::vector<PlotSeries<std::vector<double>>>;
+using PlotData = std::vector<PlotSeries<std::deque<double>>>;
+
+// note not thread safe
+double get_random(double min_val, double max_val) {
+    static std::random_device rd;
+    static std::mt19937 generator(rd());
+    std::uniform_real_distribution<double> distribution(min_val, max_val);
+    return distribution(generator);
+}
 
 int main() {
 
     auto screen = ScreenInteractive::Fullscreen();
 
     // Create some data
-    auto x1 = arange<std::vector<double>>(0, 4 * M_PI, 0.1);
-    std::vector<double> y1(x1.size());
-    std::transform(x1.begin(), x1.end(), y1.begin(), [](double v) { return 2*std::sin(v); });
-    std::transform(y1.begin(), y1.end(), y1.begin(), [](double v) { return v > 0 ? std::numeric_limits<double>::quiet_NaN() : v; });
+    std::deque<double> x1 = arange<std::deque<double>>(0, 5, 0.05);
+    std::deque<double> y1(x1.size(), 100.0); // hack
     Color color1 = Color::Red;
 
-    auto x2 = arange<std::vector<double>>(0, 8 * M_PI, 0.1);
-    std::vector<double> y2(x2.size());
-    std::transform(x2.begin(), x2.end(), y2.begin(), [](double v) { return 2.0/3.0*std::cos(v); });
-    Color color2 = Color::Blue;
-
     PlotData data = {
-	{&x1, &y1, &color1, SeriesStyle::PointScatter},
-	{&x2, &y2, &color2, SeriesStyle::PointLine}
+	{&x1, &y1, &color1, SeriesStyle::PointLine},
     };
 
     // Color selector for series 1
@@ -60,20 +61,11 @@ int main() {
     };
     auto color1_menu = Radiobox(color1_radio_op);
 
-    // Edit some data after creating the plot to demonstrate we can
-    double lastx = x1.back();
-    double lasty = y1.back();
-    for (size_t i = 0; i < 10; i++) {
-	lastx += 0.5;
-	x1.push_back(lastx);
-	y1.push_back(lasty);
-    }
-
     // Axis limits
-    std::string ymin;
-    std::string ymax;
-    std::string xmin;
-    std::string xmax;
+    std::string ymin = "-2.0";
+    std::string ymax = "2.0";
+    std::string xmin = "0.0";
+    std::string xmax = "5.0";
 
     auto make_input = [&](std::string &str){
 	auto op = InputOption{};
@@ -87,7 +79,7 @@ int main() {
     auto xmax_inp = make_input(xmax);
 
     // Create the plot component
-    PlotOption<std::vector<double>> op;
+    PlotOption<std::deque<double>> op;
     op.data = &data;
     op.xmin = &xmin;
     op.xmax = &xmax;
@@ -144,11 +136,23 @@ int main() {
 	    }) | border | size(HEIGHT, EQUAL, 12),
 	});
     });
+//
+    // // Auto-scale on start
+    // plot->OnEvent(PlotEvent::AutoScale);
 
-    // Auto-scale on start
-    plot->OnEvent(PlotEvent::AutoScale);
+    // main program loop
+    constexpr int POLL_PERIOD_MS = 50;
+    Loop loop(&screen, main_renderer);
+    while (!loop.HasQuitted()) {
 
-    screen.Loop(main_renderer);
+	y1.push_back(get_random(-1.0, 1.0));
+	y1.pop_front();
+
+	screen.PostEvent(Event::Custom);
+
+	loop.RunOnce();
+	std::this_thread::sleep_for(std::chrono::milliseconds(POLL_PERIOD_MS));
+    }
 
     return 0;
 }
